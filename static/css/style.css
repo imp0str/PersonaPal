@@ -1,0 +1,158 @@
+html, body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Drawer Toggle */
+#drawer {
+  position: fixed;
+  top: 0;
+  left: -16rem;
+  width: 16rem;
+  height: 100vh;
+  transition: left 0.3s ease-in-out;
+  z-index: 100;
+}
+#drawer.open {
+  left: 0;
+}
+
+/* now for the toggle button: */
+#toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;            /* starting spot */
+  z-index: 20;
+  transition: transform 0.3s ease-in-out;
+  /* no transform by default */
+}
+#toggle.open {
+  transform: translateX(16rem);   /* slide it right by exactly the drawer’s width */
+}
+
+/* Menu toggle */
+#toggle {
+  position: fixed;
+  top: 1rem;
+  z-index: 20;
+}
+
+/* Theme dropdown */
+#theme-selector {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 30;
+}
+
+/* Main content center avatar/text is handled by Tailwind utilities */
+
+/* Chat container */
+#chat-container {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
+  z-index: 20;
+}
+
+/* Chat input wrapper: less “squashed pill”, more roomy bottom padding */
+#chat-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 7rem 0.5rem 1rem;  /* room for the send/emoji buttons */
+  border-radius: 1rem;
+
+  cursor: text;                       /* show text cursor everywhere */
+  transition: box-shadow .2s ease;
+}
+
+#chat-input-wrapper:focus-within {
+  box-shadow: 0 0 0 2px var(--pf-comp-secondary);
+}
+
+/* let textarea flex to fill */
+#chat-input {
+  flex: 1;
+  min-height: 1.5rem;      /* so it’s never 0px tall */
+  max-height: 10rem;
+  overflow-y: auto;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 0;              /* padding’s on the wrapper now */
+  line-height: 1.5;
+  font-size: 1rem;
+  color: inherit;
+}
+
+#emoji-picker {
+  position: fixed;       /* we’ll place it via JS */
+  display: none;            /* JS will toggle to grid */
+  gap: .25rem;
+  grid-template-columns: repeat(6,1fr);
+
+  max-width: 12rem;
+  max-height: 10rem;        /* cap height */
+  overflow-y: auto;         /* scroll when too tall */
+
+  background: var(--pf-con-bg-base-200);
+  border: 1px solid var(--pf-con-border-base);
+  border-radius: .5rem;
+  padding: .5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+
+  z-index: 50;
+}
+
+#emoji-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 2.5rem;    /* float just left of the send button */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 25%;
+}
+
+#send-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0.75rem;   /* snug inside the right edge */
+  cursor: pointer;
+}
+
+/* Keep secondary send button always same */
+#send-btn.btn-secondary:hover,
+#send-btn.btn-secondary:focus {
+  background: var(--pf-comp-secondary) !important;
+  border-color: var(--pf-comp-secondary) !important;
+  color: var(--pf-comp-secondary-content) !important;
+}
+
+/* Avatar grid styling is retained from earlier */
+/* force bubbles to wrap long words and grow in height */
+.chat-bubble {
+  /* limit width so they don’t stretch past the chat window */
+  max-width: 80%;              /* tweak as you like */
+  /* allow line breaks inside long words */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+/* make modal contents scroll if keyboard pushes it on mobile */
+#request-modal > div {
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 999;
+}
+
+/* style your alerts */
+#request-alert.success { color: theme("colors.green.500"); }
+#request-alert.error   { color: theme("colors.red.500"); }

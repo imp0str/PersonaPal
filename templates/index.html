@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" data‑theme="{{ theme or 'dark' }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PersonaPal</title>
+
+  <!-- Tailwind & DaisyUI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet"/>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <!-- Markdown parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Prism.js for code highlighting -->
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+
+<body class="bg-base-100 flex h-screen overflow-hidden">
+
+  {% set personas = [
+  'rick',
+  'mario',
+  'deadpool',
+  'goku',
+  'sherlock',
+  'hermione',
+  'tony',
+  'leia',
+  'mandalorian',
+  'pikachu',
+  'spongebob',
+  'donaldtrump',
+  'barackobama',
+  'bangchan',
+  'khaleesi',
+  'naruto',
+  'luffy',
+  'darthvader',
+  'edwardelric',
+  'petergriffin'
+] %}
+
+<!-- INTRO SCREEN -->
+<div id="intro-screen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6">
+
+  <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent text-center">
+    Welcome to PersonaPal
+  </h1>
+  <p class="max-w-lg text-center text-lg">
+    A fun little chatbot where you talk to characters from your favorite shows, movies, and video games. They’ll remember everything you say until you switch characters or refresh the page. Feel free to send any requests for additional characters you would like to see.
+  </p>
+
+  <!-- 1) DESKTOP & TABLET: 10‑col grid -->
+  <div
+    id="intro-avatars"
+    class="hidden sm:grid grid-cols-10 gap-4 overflow-auto max-w-full"
+  >
+    {% for p in personas %}
+    <img
+      src="{{ url_for('static', filename='images/' ~ p ~ '.jpg') }}"
+      data-avatar="{{ p }}"
+      class="intro-avatar w-24 h-24 rounded-full object-cover cursor-pointer opacity-70 hover:opacity-100 transition ring-offset-2"
+      alt="{{ p|capitalize }}"
+    />
+    {% endfor %}
+  </div>
+
+  <!-- 2) MOBILE: <select> instead of images -->
+  <select
+    id="intro-select"
+    class="block sm:hidden input input-bordered w-48 text-center"
+  >
+    <option value="">— Pick a Character —</option>
+    {% for p in personas %}
+    <option value="{{ p }}">{{ p|capitalize }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Start button -->
+  <button
+    id="start-chat-btn"
+    class="btn btn-primary opacity-50 cursor-not-allowed"
+    disabled
+  >
+    Let’s Chat &gt;
+  </button>
+</div>
+
+
+  <!-- CHAT APP -->
+  <div id="chat-app" class="hidden flex-1 flex flex-col">
+
+    <!-- DRAWER -->
+    <nav id="drawer" class="p-4 flex flex-col">
+  <div class="flex-shrink-0 text-center mb-2">
+    <span class="text-lg font-semibold text-base-content">Characters</span>
+  </div>
+  <div class="flex-shrink-0 divider"></div>
+
+  <!-- scrollable area -->
+  <div class="overflow-y-auto flex-1">
+    <div class="grid grid-cols-2 gap-6 justify-items-center mt-2 pb-4">
+      {% for p in personas %}
+      <img
+        src="{{ url_for('static', filename='images/' ~ p ~ '.jpg') }}"
+        data-avatar="{{ p }}"
+        class="avatar w-20 h-20 rounded-full object-cover cursor-pointer"
+        alt="{{ p|capitalize }}"
+      />
+      {% endfor %}
+    </div>
+  </div>
+</nav>
+
+    <!-- MENU TOGGLE -->
+    <button id="toggle" class="btn btn-primary" style="left: 16px;">Characters</button>
+    <!-- THEME PICKER -->
+    <div id="theme-selector" class="dropdown dropdown-end">
+      <label tabindex="0" class="btn btn-primary m-1">Theme</label>
+      <ul tabindex="0"
+          class="dropdown-content menu p-2 shadow bg-base-200 rounded-box w-52 max-h-80 overflow-auto">
+        {% for t in [
+          'light','dark','cupcake','bumblebee','emerald','corporate',
+          'synthwave','retro','cyberpunk','valentine','halloween',
+          'garden','forest','aqua','lofi','pastel','fantasy','wireframe',
+          'black','luxury','dracula','cmyk','autumn','business','acid',
+          'lemonade','night','coffee','winter'
+        ] %}
+        <li><a data-theme-name="{{ t }}">{{ t }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col min-h-0">
+
+  <!-- LOGO -->
+  <div class="py-4 text-center">
+    <h1
+      class="text-2xl font-bold
+             bg-gradient-to-r from-primary to-secondary
+             bg-clip-text text-transparent inline-block"
+    >
+      PersonaPal
+    </h1>
+  </div>
+
+  <!-- CHAT WINDOW -->
+  <div id="chat-window" class="flex-1 overflow-y-auto mx-auto w-full max-w-[600px] p-4 pb-32 space-y-4 min-h-0">
+    <!-- Profile / Personality -->
+    <div class="flex flex-col items-center space-y-2">
+      <img
+        id="profile-avatar"
+        class="w-32 h-32 rounded-full object-cover"
+        src="{{ url_for('static', filename='images/avatar.png') }}"
+        alt="Selected Avatar"
+      />
+      <p id="profile-text" class="text-xl text-center px-4">
+        Rick Sanchez: A cynical, alcoholic genius from the Rick and Morty universe.
+      </p>
+    </div>
+
+    <!-- chat bubbles injected here -->
+  </div>
+
+</main>
+
+<!-- FIXED CHAT INPUT (always visible) -->
+<div
+  id="chat-input-fixed"
+  class="fixed bottom-0 left-0 w-full bg-base-100 p-4 z-20"
+>
+  <div
+    id="chat-input-wrapper"
+    class="relative bg-primary text-primary-content
+           rounded-full p-2 mx-auto w-[90%] max-w-[600px]"
+  >
+    <textarea
+      id="chat-input"
+      class="w-full bg-transparent outline-none resize-none
+             text-primary-content placeholder-primary-content"
+      placeholder="Type your message…"
+      rows="1"
+    ></textarea>
+
+    <button
+      id="emoji-btn"
+      class="btn btn-md absolute bottom-2 right-14 text-3xl pb-1"
+    >😊</button>
+    <div id="emoji-picker"></div>
+
+    <button
+      id="send-btn"
+      class="btn btn-secondary btn-circle btn-sm absolute bottom-2 right-2"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg"
+           class="h-5 w-5" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- REQUEST A CHARACTER BUTTON -->
+  <button
+    id="request-btn"
+    class="btn btn-primary fixed bottom-4 right-4 z-40"
+    title="Request a new character"
+  >
+    Request a Character
+  </button>
+
+  <!-- REQUEST A CHARACTER MODAL -->
+  <div
+    id="request-modal"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 hidden z-50"
+  >
+    <div class="bg-base-100 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button id="request-close"
+              class="btn btn-sm btn-circle absolute top-3 right-3">✕</button>
+      <h2 class="text-2xl font-bold mb-4">Request a Character</h2>
+      <form id="request-form" class="space-y-4">
+        <input type="hidden" name="_subject"
+       value="PersonaPal message from {name}" />
+        <div>
+        <label class="block text-sm font-medium">Your Name</label>
+        <input name="name" type="text" required
+               class="input input-bordered w-full"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Character Requested</label>
+        <input name="character" type="text" required
+               class="input input-bordered w-full"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">What they’ll do</label>
+        <textarea name="message" rows="3" required
+                  class="textarea textarea-bordered w-full"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary w-full">Send Request</button>
+      </form>
+      <div id="request-alert" class="mt-4 text-center"></div>
+    </div>
+  </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
